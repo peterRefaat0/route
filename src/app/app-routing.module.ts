@@ -56,6 +56,14 @@ const routes: Routes = [
         title: 'Brands',
       },
       {
+        path: 'wishlist',
+        loadComponent: () =>
+          import('./components/whishlist/whishlist.component').then(
+            (m) => m.WhishlistComponent
+          ),
+        title: 'Wishlist',
+      },
+      {
         path: 'allorders',
 
         loadComponent: () =>
