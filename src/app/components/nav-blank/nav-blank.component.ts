@@ -9,6 +9,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CartService } from 'src/app/core/services/cart.service';
+import { WishlistService } from 'src/app/core/services/whishlist.service';
+
 
 @Component({
   selector: 'app-nav-blank',
@@ -21,7 +23,8 @@ export class NavBlankComponent implements OnInit {
   constructor(
     private _Router: Router,
     private _CartService: CartService,
-    private _Renderer2: Renderer2
+    private _Renderer2: Renderer2,
+    private _WhishlistService: WishlistService,
   ) {}
 
   @ViewChild('navBar') navElement!: ElementRef; // element
@@ -37,10 +40,15 @@ export class NavBlankComponent implements OnInit {
       this._Renderer2.removeClass(this.navElement.nativeElement, 'shadow');
     }
   }
-
+  favNum: number = 0;
   cartNum: number = 0;
 
   ngOnInit(): void {
+    this._WhishlistService.getWishlist().subscribe({
+      next: (data) => {
+        this.favNum = data.length;
+      },
+    });
     this._CartService.cartNumber.subscribe({
       next: (data) => {
         this.cartNum = data;
