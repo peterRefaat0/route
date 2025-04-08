@@ -1,38 +1,49 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
-@Injectable({
-  providedIn: 'root',
-})
+interface WishlistItem {
+  _id: string; // Match your actual ID property
+  title: string;
+  price: number;
+  // Add other properties
+}
+
+@Injectable({ providedIn: 'root' })
 export class WishlistService {
-  private wishlistItems: any[] = [];
-  private wishlistSubject = new BehaviorSubject<any[]>([]);
+  private storageKey = 'wishlist';
+  private wishlistItems: WishlistItem[] = [];
+  private wishlistSubject = new BehaviorSubject<WishlistItem[]>([]);
 
-  getWishlist(): Observable<any[]> {
+  constructor() {
+    this.loadFromStorage();
+  }
+
+  getWishlist() {
     return this.wishlistSubject.asObservable();
   }
 
-  addToWishlist(item: any): Observable<any> {
-    this.wishlistItems.push(item);
-    this.wishlistSubject.next(this.wishlistItems);
-
-    const response = {
-      message: 'Item added to wishlist successfully',
-      data: this.wishlistItems,
-    };
-
-    return of(response); // 👈 بيرجع Observable تقدر تعمل عليه subscribe
+  addToWishlist(item: WishlistItem): void {
+    if (!this.wishlistItems.some((i) => i._id === item._id)) {
+      this.wishlistItems.push(item);
+      this.update();
+    }
   }
 
-  removeFromWishlist(productId: string): Observable<any> {
-    this.wishlistItems = this.wishlistItems.filter(item => item.id !== productId);
+  removeFromWishlist(productId: string): void {
+    this.wishlistItems = this.wishlistItems.filter(
+      (item) => item._id !== productId
+    );
+    this.update();
+  }
+
+  private loadFromStorage(): void {
+    const saved = localStorage.getItem(this.storageKey);
+    this.wishlistItems = saved ? JSON.parse(saved) : [];
     this.wishlistSubject.next(this.wishlistItems);
+  }
 
-    const response = {
-      message: 'Item removed from wishlist',
-      data: this.wishlistItems,
-    };
-
-    return of(response);
+  private update(): void {
+    localStorage.setItem(this.storageKey, JSON.stringify(this.wishlistItems));
+    this.wishlistSubject.next(this.wishlistItems);
   }
 }
